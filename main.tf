@@ -135,3 +135,11 @@ resource "azurerm_iothub_certificate" "this" {
   resource_group_name = data.azurerm_resource_group.this.name
   is_verified         = lookup(var.iothub_certificate[count.index], "is_verified")
 }
+
+resource "azurerm_iothub_consumer_group" "this" {
+  count                  = length(var.iothub) == 0 ? 0 : length(var.consumer_group)
+  eventhub_endpoint_name = lookup(var.consumer_group[count.index], "eventhub_endpoint_name")
+  iothub_name            = try(element(azurerm_iothub.this.*.name, lookup(var.consumer_group[count.index], "iothub_id")))
+  name                   = lookup(var.consumer_group[count.index], "name")
+  resource_group_name    = data.azurerm_resource_group.this.name
+}

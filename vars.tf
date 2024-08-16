@@ -181,3 +181,13 @@ variable "iothub_certificate" {
   }))
   default = []
 }
+
+variable "consumer_group" {
+  type = list(object({
+    id                     = number
+    eventhub_endpoint_name = string
+    iothub_id              = any
+    name                   = string
+  }))
+  default = []
+}

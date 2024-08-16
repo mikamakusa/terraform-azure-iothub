@@ -43,3 +43,24 @@ output "iothub_certificate_is_verified" {
     azurerm_iothub_certificate.this.*.is_verified
   )
 }
+
+## CONSUMER GROUP ##
+
+output "consumer_group_name" {
+  value = try(
+    azurerm_iothub_consumer_group.this.*.name
+  )
+}
+
+output "consumer_group_id" {
+  value = try(
+    azurerm_iothub_consumer_group.this.*.id
+  )
+}
+
+output "consumer_group_eventhub_endpoint_name" {
+  value = try(
+    azurerm_iothub_consumer_group.this.*.eventhub_endpoint_name
+  )
+}
+
