@@ -16,8 +16,22 @@ resource "azurerm_iothub" "this" {
   }
 
   dynamic "cloud_to_device" {
-    for_each = ""
-    content {}
+    for_each = lookup(var.iothub[count.index], "cloud_to_device") == null ? [] : ["cloud_to_device"]
+    content {
+      max_delivery_count = lookup(cloud_to_device.value, "max_delivery_count")
+      default_ttl        = lookup(cloud_to_device.value, "default_ttl")
+
+      dynamic "feedback" {
+        for_each = (lookup(cloud_to_device.value, "feedback_time_to_live") != null ||
+          lookup(cloud_to_device.value, "feedback_max_delivery_count") != null ||
+        lookup(cloud_to_device.value, "feedback_lock_duration") != null) ? ["feedback"] : []
+        content {
+          time_to_live       = lookup(cloud_to_device.value, "feedback_time_to_live")
+          max_delivery_count = lookup(cloud_to_device.value, "feedback_max_delivery_count")
+          lock_duration      = lookup(cloud_to_device.value, "feedback_lock_duration")
+        }
+      }
+    }
   }
 
   dynamic "endpoint" {
@@ -142,4 +156,78 @@ resource "azurerm_iothub_consumer_group" "this" {
   iothub_name            = try(element(azurerm_iothub.this.*.name, lookup(var.consumer_group[count.index], "iothub_id")))
   name                   = lookup(var.consumer_group[count.index], "name")
   resource_group_name    = data.azurerm_resource_group.this.name
+}
+
+resource "azurerm_iothub_device_update_account" "this" {
+  count                         = length(var.device_update_account)
+  location                      = data.azurerm_resource_group.this.location
+  name                          = lookup(var.device_update_account[count.index], "name")
+  resource_group_name           = data.azurerm_resource_group.this.name
+  public_network_access_enabled = lookup(var.device_update_account[count.index], "public_network_access_enabled")
+  sku                           = lookup(var.device_update_account[count.index], "sku")
+  tags                          = merge(var.tags, lookup(var.device_update_account[count.index], "tags"))
+
+  dynamic "identity" {
+    for_each = lookup(var.device_update_account[count.index], "identity_type") != null ? ["identity"] : []
+    content {
+      type         = lookup(var.device_update_account[count.index], "identity_type")
+      identity_ids = [lookup(var.device_update_account[count.index], "identity_ids")]
+    }
+  }
+}
+
+resource "azurerm_iothub_device_update_instance" "this" {
+  count                    = (length(var.iothub) && length(var.device_update_account)) == 0 ? 0 : length(var.device_update_instance)
+  device_update_account_id = try(element(azurerm_iothub_device_update_account.this.*.id, lookup(var.device_update_instance[count.index], "device_update_account_id")))
+  iothub_id                = try(element(azurerm_iothub.this.*.id, lookup(var.device_update_instance[count.index], "iothub")))
+  name                     = lookup(var.device_update_instance[count.index], "name")
+  diagnostic_enabled       = lookup(var.device_update_instance[count.index], "diagnostic_enabled")
+  tags                     = merge(var.tags, lookup(var.device_update_instance[count.index], "tags"))
+
+  dynamic "diagnostic_storage_account" {
+    for_each = lookup(var.device_update_instance[count.index], "diagnostic_storage_account") == null ? [] : ["diagnostic_storage_account"]
+    iterator = diagnostic
+    content {
+      connection_string = try(element(module.storage.*.storage_account_primary_connection_string, lookup(diagnostic.value, "storage_account_id")))
+      id                = try(element(module.storage.*.storage_account_id, lookup(diagnostic.value, "storage_account_id")))
+    }
+  }
+}
+
+resource "azurerm_iothub_dps" "this" {
+  count                         = length(var.iothub_dps)
+  location                      = data.azurerm_resource_group.this.location
+  name                          = lookup(var.iothub_dps[count.index], "name")
+  resource_group_name           = data.azurerm_resource_group.this.name
+  allocation_policy             = lookup(var.iothub_dps[count.index], "allocation_policy")
+  data_residency_enabled        = lookup(var.iothub_dps[count.index], "data_residency_enabled")
+  public_network_access_enabled = lookup(var.iothub_dps[count.index], "public_network_access_enabled")
+
+  dynamic "sku" {
+    for_each = lookup(var.iothub_dps[count.index], "sku") == null ? [] : ["sku"]
+    content {
+      capacity = lookup(sku.value, "capacity")
+      name     = lookup(sku.value, "name", "S1")
+    }
+  }
+
+  dynamic "ip_filter_rule" {
+    for_each = lookup(var.iothub_dps[count.index], "ip_filter_rule") == null ? [] : ["ip_filter_rule"]
+    content {
+      action  = lookup(ip_filter_rule.value, "action")
+      ip_mask = lookup(ip_filter_rule.value, "ip_mask")
+      name    = lookup(ip_filter_rule.value, "name")
+      target  = lookup(ip_filter_rule.value, "target")
+    }
+  }
+
+  dynamic "linked_hub" {
+    for_each = lookup(var.iothub_dps[count.index], "linked_hub") == null ? [] : ["linked_hub"]
+    content {
+      connection_string       = lookup(linked_hub.value, "connection_string")
+      location                = lookup(linked_hub.value, "location")
+      apply_allocation_policy = lookup(linked_hub.value, "apply_allocation_policy")
+      allocation_weight       = lookup(linked_hub.value, "allocation_weight")
+    }
+  }
 }

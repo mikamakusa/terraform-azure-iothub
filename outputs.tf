@@ -64,3 +64,50 @@ output "consumer_group_eventhub_endpoint_name" {
   )
 }
 
+## DEVICE UPDATE ACCOUNT ##
+
+output "device_update_account_id" {
+  value = try(
+    azurerm_iothub_device_update_account.this.*.id
+  )
+}
+
+output "device_update_account_name" {
+  value = try(
+    azurerm_iothub_device_update_account.this.*.name
+  )
+}
+
+output "device_update_account_sku" {
+  value = try(
+    azurerm_iothub_device_update_account.this.*.sku
+  )
+}
+
+## DEVICE UPDATE INSTANCE ##
+
+output "device_update_instance_id" {
+  value = try(
+    azurerm_iothub_device_update_instance.this.*.id
+  )
+}
+
+output "device_update_instance_name" {
+  value = try(
+    azurerm_iothub_device_update_instance.this.*.name
+  )
+}
+
+## IOTHUB DPS ##
+
+output "iothub_dps_id" {
+  value = try(
+    azurerm_iothub_dps.this.*.id
+  )
+}
+
+output "iothub_dps_name" {
+  value = try(
+    azurerm_iothub_dps.this.*.name
+  )
+}

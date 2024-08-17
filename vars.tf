@@ -1,3 +1,10 @@
+## TAGS ##
+
+variable "tags" {
+  type    = map(string)
+  default = {}
+}
+
 ## DATASOURCES ##
 
 variable "resource_group_name" {
@@ -190,4 +197,94 @@ variable "consumer_group" {
     name                   = string
   }))
   default = []
+}
+
+variable "device_update_account" {
+  type = list(object({
+    id                            = number
+    name                          = string
+    public_network_access_enabled = optional(bool)
+    sku                           = optional(string)
+    tags                          = optional(map(string))
+    identity_type                 = optional(string)
+    identity_ids                  = optional(list(string))
+  }))
+  default = []
+
+  validation {
+    condition = length([
+      for a in var.device_update_account : true if contains(["SystemAssigned", "UserAssigned"], a.identity_type)
+    ]) == length(var.device_update_account)
+    error_message = "Possible values are SystemAssigned, UserAssigned."
+  }
+
+  validation {
+    condition = length([
+      for b in var.device_update_account : true if contains(["Free", "Standard"], b.sku)
+    ]) == length(var.device_update_account)
+    error_message = "Possible values are Free, Standard."
+  }
+}
+
+variable "device_update_instance" {
+  type = list(object({
+    id                       = number
+    device_update_account_id = any
+    iothub_id                = any
+    name                     = string
+    diagnostic_enabled       = optional(bool)
+    tags                     = optional(map(string))
+    diagnostic_storage_account = optional(list(object({
+      storage_account_id = any
+    })))
+  }))
+  default = []
+}
+
+variable "iothub_dps" {
+  type = list(object({
+    id                            = number
+    name                          = string
+    allocation_policy             = optional(string)
+    data_residency_enabled        = optional(bool)
+    public_network_access_enabled = optional(bool)
+    sku = optional(list(object({
+      capacity = number
+      name     = optional(string)
+    })))
+    ip_filter_rule = optional(list(object({
+      action  = string
+      ip_mask = string
+      name    = string
+      target  = optional(string)
+    })))
+    linked_hub = optional(list(object({
+      connection_string       = string
+      location                = string
+      apply_allocation_policy = optional(bool)
+      allocation_weight       = optional(number)
+    })))
+  }))
+  default = []
+
+  validation {
+    condition = length([
+      for a in var.iothub_dps : true if contains(["Hashed", "GeoLatency", "Static"], a.allocation_policy)
+    ]) == length(var.iothub_dps)
+    error_message = "The allocation policy of the IoT Device Provisioning Service (Hashed, GeoLatency or Static). Defaults to Hashed."
+  }
+
+  validation {
+    condition = length([
+      for b in var.iothub_dps : true if contains(["Accept", "Reject"], b.ip_filter_rule.action)
+    ]) == length(var.iothub_dps)
+    error_message = "Possible values are Accept, Reject."
+  }
+
+  validation {
+    condition = length([
+      for b in var.iothub_dps : true if contains(["All", "deviceApi", "serviceApi"], b.ip_filter_rule.target)
+    ]) == length(var.iothub_dps)
+    error_message = "Possible values are All, deviceApi, serviceApi."
+  }
 }
