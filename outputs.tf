@@ -111,3 +111,31 @@ output "iothub_dps_name" {
     azurerm_iothub_dps.this.*.name
   )
 }
+
+## IOTHUB DPS CERTIFICATE ##
+
+output "iothub_dps_certificate_id" {
+  value = try(
+    azurerm_iothub_dps_certificate.this.*.id
+  )
+}
+
+output "iothub_dps_certificate_name" {
+  value = try(
+    azurerm_iothub_dps_certificate.this.*.name
+  )
+}
+
+## IOTHUB DPS SHARED ACCESS POLICY ##
+
+output "iothub_dps_share_access_policy_id" {
+  value = try(
+    azurerm_iothub_dps_shared_access_policy.this.*.id
+  )
+}
+
+output "iothub_dps_share_access_policy_name" {
+  value = try(
+    azurerm_iothub_dps_shared_access_policy.this.*.name
+  )
+}

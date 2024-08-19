@@ -231,3 +231,24 @@ resource "azurerm_iothub_dps" "this" {
     }
   }
 }
+
+resource "azurerm_iothub_dps_certificate" "this" {
+  count               = length(var.iothub_dps) == 0 ? 0 : length(var.iothub_dps_certificate)
+  certificate_content = filebase64(join("/", [path.cwd, "certificate", lookup(var.iothub_dps_certificate[count.index], "certificate_content")]))
+  iot_dps_name        = try(element(azurerm_iothub_dps.this.*.name, lookup(var.iothub_dps_certificate[count.index], "iot_dps_id")))
+  name                = lookup(var.iothub_dps_certificate[count.index], "name")
+  resource_group_name = data.azurerm_resource_group.this.name
+  is_verified         = lookup(var.iothub_dps_certificate[count.index], "is_verified")
+}
+
+resource "azurerm_iothub_dps_shared_access_policy" "this" {
+  count               = length(var.iothub_dps) == 0 ? 0 : length(var.iothub_dps_shared_access_policy)
+  iothub_dps_name     = try(element(azurerm_iothub_dps.this.*.name, lookup(var.iothub_dps_shared_access_policy[count.index], "iothub_dps_id")))
+  name                = lookup(var.iothub_dps_shared_access_policy[count.index], "name")
+  resource_group_name = data.azurerm_resource_group.this.name
+  enrollment_read     = lookup(var.iothub_dps_shared_access_policy[count.index], "enrollment_read")
+  enrollment_write    = lookup(var.iothub_dps_shared_access_policy[count.index], "enrollment_write")
+  registration_read   = lookup(var.iothub_dps_shared_access_policy[count.index], "registration_read")
+  registration_write  = lookup(var.iothub_dps_shared_access_policy[count.index], "registration_write")
+  service_config      = lookup(var.iothub_dps_shared_access_policy[count.index], "service_config")
+}

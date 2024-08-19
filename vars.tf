@@ -288,3 +288,28 @@ variable "iothub_dps" {
     error_message = "Possible values are All, deviceApi, serviceApi."
   }
 }
+
+variable "iothub_dps_certificate" {
+  type = list(object({
+    id                  = number
+    certificate_content = string
+    iot_dps_id          = any
+    name                = string
+    is_verified         = optional(bool)
+  }))
+  default = []
+}
+
+variable "iothub_dps_shared_access_policy" {
+  type = list(object({
+    id                 = number
+    iothub_dps_id      = any
+    name               = string
+    enrollment_read    = optional(bool)
+    enrollment_write   = optional(bool)
+    registration_read  = optional(bool)
+    registration_write = optional(bool)
+    service_config     = optional(bool)
+  }))
+  default = []
+}
