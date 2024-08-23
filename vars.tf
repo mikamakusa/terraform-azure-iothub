@@ -5,6 +5,12 @@ variable "tags" {
   default = {}
 }
 
+## MODULES
+
+variable "sorage_account" {
+  type = any
+}
+
 ## DATASOURCES ##
 
 variable "resource_group_name" {
@@ -61,6 +67,8 @@ variable "iothub" {
       batch_frequency_in_seconds = optional(number)
       max_chunk_size_in_bytes    = optional(number)
       encoding                   = optional(string)
+      container_id               = optional(any)
+      storage_account_id         = optional(any)
     })))
     network_rule_set = optional(list(object({
       default_action                     = optional(string)

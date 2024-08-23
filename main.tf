@@ -43,8 +43,8 @@ resource "azurerm_iothub" "this" {
       identity_id                = lookup(endpoint.value, "identity_id")
       endpoint_uri               = (lookup(endpoint.value, "authentication_type") == "identityBased" || lookup(endpoint.value, "endpoint_type") == "AzureIotHub.ServiceBusQueue" || lookup(endpoint.value, "endpoint_type") == "AzureIotHub.ServiceBusTopic" || lookup(endpoint.value, "endpoint_type") == "AzureIotHub.EventHub") ? lookup(endpoint.value, "endpoint_uri") : null
       entity_path                = (lookup(endpoint.value, "authentication_type") == "identityBased" || lookup(endpoint.value, "endpoint_type") == "AzureIotHub.ServiceBusQueue" || lookup(endpoint.value, "endpoint_type") == "AzureIotHub.ServiceBusTopic" || lookup(endpoint.value, "endpoint_type") == "AzureIotHub.EventHub") ? lookup(endpoint.value, "entity_path") : null
-      connection_string          = lookup(endpoint.value, "type") == "AzureIotHub.EventHub" ? data.azurerm_eventhub_authorization_rule.this.primary_connection_string : lookup(endpoint.value, "type") == "AzureIotHub.StorageContainer" ? data.azurerm_storage_account.this.primary_blob_connection_string : null
-      container_name             = lookup(endpoint.value, "type") == "AzureIotHub.StorageContainer" ? data.azurerm_storage_container.this.name : null
+      connection_string          = lookup(endpoint.value, "type") == "AzureIotHub.EventHub" ? data.azurerm_eventhub_authorization_rule.this.primary_connection_string : lookup(endpoint.value, "type") == "AzureIotHub.StorageContainer" ? try(element(module.storage.*.storage_account_primary_blob_connection_string, lookup(endpoint.value, "storage_account_id"))) : null
+      container_name             = lookup(endpoint.value, "type") == "AzureIotHub.StorageContainer" ? try(element(module.storage.*.container_name, lookup(endpoint.value, "container_id"))) : null
       file_name_format           = lookup(endpoint.value, "file_name_format")
       resource_group_name        = lookup(endpoint.value, "resource_group_name")
       batch_frequency_in_seconds = lookup(endpoint.value, "batch_frequency_in_seconds")
