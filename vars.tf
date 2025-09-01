@@ -46,7 +46,7 @@ variable "eventhub_authorization_rule_name" {
 
 variable "iothub" {
   type = list(object({
-    id                           = number
+    id                           = string
     name                         = string
     local_authentication_enabled = optional(bool)
     event_hub_partition_count    = optional(number)
@@ -188,9 +188,9 @@ variable "iothub" {
 
 variable "iothub_certificate" {
   type = list(object({
-    id                  = number
+    id                  = string
     certificate_content = string
-    iothub_id           = any
+    iothub_id           = string
     name                = string
     is_verified         = optional(bool)
   }))
@@ -199,9 +199,9 @@ variable "iothub_certificate" {
 
 variable "consumer_group" {
   type = list(object({
-    id                     = number
+    id                     = string
     eventhub_endpoint_name = string
-    iothub_id              = any
+    iothub_id              = string
     name                   = string
   }))
   default = []
@@ -209,7 +209,7 @@ variable "consumer_group" {
 
 variable "device_update_account" {
   type = list(object({
-    id                            = number
+    id                            = string
     name                          = string
     public_network_access_enabled = optional(bool)
     sku                           = optional(string)
@@ -236,9 +236,9 @@ variable "device_update_account" {
 
 variable "device_update_instance" {
   type = list(object({
-    id                       = number
-    device_update_account_id = any
-    iothub_id                = any
+    id                       = string
+    device_update_account_id = string
+    iothub_id                = string
     name                     = string
     diagnostic_enabled       = optional(bool)
     tags                     = optional(map(string))
@@ -251,7 +251,7 @@ variable "device_update_instance" {
 
 variable "iothub_dps" {
   type = list(object({
-    id                            = number
+    id                            = string
     name                          = string
     allocation_policy             = optional(string)
     data_residency_enabled        = optional(bool)
@@ -299,9 +299,9 @@ variable "iothub_dps" {
 
 variable "iothub_dps_certificate" {
   type = list(object({
-    id                  = number
+    id                  = string
     certificate_content = string
-    iot_dps_id          = any
+    iot_dps_id          = string
     name                = string
     is_verified         = optional(bool)
   }))
@@ -310,8 +310,8 @@ variable "iothub_dps_certificate" {
 
 variable "iothub_dps_shared_access_policy" {
   type = list(object({
-    id                 = number
-    iothub_dps_id      = any
+    id                 = string
+    iothub_dps_id      = string
     name               = string
     enrollment_read    = optional(bool)
     enrollment_write   = optional(bool)

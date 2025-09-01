@@ -142,18 +142,18 @@ resource "azurerm_iothub" "this" {
 }
 
 resource "azurerm_iothub_certificate" "this" {
-  count               = length(var.iothub) == 0 ? 0 : length(var.iothub_certificate)
+  count               = length(var.iothub) == "0" ? "0" : length(var.iothub_certificate)
   certificate_content = filebase64(join("/", [path.cwd, "certificate", lookup(var.iothub_certificate[count.index], "certificate_content")]))
-  iothub_name         = try(element(azurerm_iothub.this.*.name, lookup(var.iothub_certificate[count.index], "iothub_id")))
+  iothub_name         = element(azurerm_iothub.this.*.name, lookup(var.iothub_certificate[count.index], "iothub_id"))
   name                = lookup(var.iothub_certificate[count.index], "name")
   resource_group_name = data.azurerm_resource_group.this.name
   is_verified         = lookup(var.iothub_certificate[count.index], "is_verified")
 }
 
 resource "azurerm_iothub_consumer_group" "this" {
-  count                  = length(var.iothub) == 0 ? 0 : length(var.consumer_group)
+  count                  = length(var.iothub) == "0" ? "0" : length(var.consumer_group)
   eventhub_endpoint_name = lookup(var.consumer_group[count.index], "eventhub_endpoint_name")
-  iothub_name            = try(element(azurerm_iothub.this.*.name, lookup(var.consumer_group[count.index], "iothub_id")))
+  iothub_name            = element(azurerm_iothub.this.*.name, lookup(var.consumer_group[count.index], "iothub_id"))
   name                   = lookup(var.consumer_group[count.index], "name")
   resource_group_name    = data.azurerm_resource_group.this.name
 }
@@ -168,7 +168,7 @@ resource "azurerm_iothub_device_update_account" "this" {
   tags                          = merge(var.tags, lookup(var.device_update_account[count.index], "tags"))
 
   dynamic "identity" {
-    for_each = lookup(var.device_update_account[count.index], "identity_type") != null ? ["identity"] : []
+    for_each = lookup(var.device_update_account[count.index], "identity_type") != null ? [""] : []
     content {
       type         = lookup(var.device_update_account[count.index], "identity_type")
       identity_ids = [lookup(var.device_update_account[count.index], "identity_ids")]
@@ -177,19 +177,19 @@ resource "azurerm_iothub_device_update_account" "this" {
 }
 
 resource "azurerm_iothub_device_update_instance" "this" {
-  count                    = (length(var.iothub) && length(var.device_update_account)) == 0 ? 0 : length(var.device_update_instance)
-  device_update_account_id = try(element(azurerm_iothub_device_update_account.this.*.id, lookup(var.device_update_instance[count.index], "device_update_account_id")))
-  iothub_id                = try(element(azurerm_iothub.this.*.id, lookup(var.device_update_instance[count.index], "iothub")))
+  count                    = length(var.iothub) == "0" ? "0" : length(var.device_update_instance)
+  device_update_account_id = element(azurerm_iothub_device_update_account.this.*.id, lookup(var.device_update_instance[count.index], "device_update_account_id"))
+  iothub_id                = element(azurerm_iothub.this.*.id, lookup(var.device_update_instance[count.index], "iothub"))
   name                     = lookup(var.device_update_instance[count.index], "name")
   diagnostic_enabled       = lookup(var.device_update_instance[count.index], "diagnostic_enabled")
   tags                     = merge(var.tags, lookup(var.device_update_instance[count.index], "tags"))
 
   dynamic "diagnostic_storage_account" {
-    for_each = lookup(var.device_update_instance[count.index], "diagnostic_storage_account") == null ? [] : ["diagnostic_storage_account"]
+    for_each = lookup(var.device_update_instance[count.index], "diagnostic_storage_account") == null ? [] : [""]
     iterator = diagnostic
     content {
-      connection_string = try(element(module.storage.*.storage_account_primary_connection_string, lookup(diagnostic.value, "storage_account_id")))
-      id                = try(element(module.storage.*.storage_account_id, lookup(diagnostic.value, "storage_account_id")))
+      connection_string = element(module.storage.*.storage_account_primary_connection_string, lookup(diagnostic.value, "storage_account_id"))
+      id                = element(module.storage.*.storage_account_id, lookup(diagnostic.value, "storage_account_id"))
     }
   }
 }
@@ -204,7 +204,7 @@ resource "azurerm_iothub_dps" "this" {
   public_network_access_enabled = lookup(var.iothub_dps[count.index], "public_network_access_enabled")
 
   dynamic "sku" {
-    for_each = lookup(var.iothub_dps[count.index], "sku") == null ? [] : ["sku"]
+    for_each = lookup(var.iothub_dps[count.index], "sku") == null ? [] : [""]
     content {
       capacity = lookup(sku.value, "capacity")
       name     = lookup(sku.value, "name", "S1")
@@ -212,7 +212,7 @@ resource "azurerm_iothub_dps" "this" {
   }
 
   dynamic "ip_filter_rule" {
-    for_each = lookup(var.iothub_dps[count.index], "ip_filter_rule") == null ? [] : ["ip_filter_rule"]
+    for_each = lookup(var.iothub_dps[count.index], "ip_filter_rule") == null ? [] : [""]
     content {
       action  = lookup(ip_filter_rule.value, "action")
       ip_mask = lookup(ip_filter_rule.value, "ip_mask")
@@ -222,7 +222,7 @@ resource "azurerm_iothub_dps" "this" {
   }
 
   dynamic "linked_hub" {
-    for_each = lookup(var.iothub_dps[count.index], "linked_hub") == null ? [] : ["linked_hub"]
+    for_each = lookup(var.iothub_dps[count.index], "linked_hub") == null ? [] : [""]
     content {
       connection_string       = lookup(linked_hub.value, "connection_string")
       location                = lookup(linked_hub.value, "location")
@@ -233,17 +233,17 @@ resource "azurerm_iothub_dps" "this" {
 }
 
 resource "azurerm_iothub_dps_certificate" "this" {
-  count               = length(var.iothub_dps) == 0 ? 0 : length(var.iothub_dps_certificate)
+  count               = length(var.iothub_dps) == "0" ? "0" : length(var.iothub_dps_certificate)
   certificate_content = filebase64(join("/", [path.cwd, "certificate", lookup(var.iothub_dps_certificate[count.index], "certificate_content")]))
-  iot_dps_name        = try(element(azurerm_iothub_dps.this.*.name, lookup(var.iothub_dps_certificate[count.index], "iot_dps_id")))
+  iot_dps_name        = element(azurerm_iothub_dps.this.*.name, lookup(var.iothub_dps_certificate[count.index], "iot_dps_id"))
   name                = lookup(var.iothub_dps_certificate[count.index], "name")
   resource_group_name = data.azurerm_resource_group.this.name
   is_verified         = lookup(var.iothub_dps_certificate[count.index], "is_verified")
 }
 
 resource "azurerm_iothub_dps_shared_access_policy" "this" {
-  count               = length(var.iothub_dps) == 0 ? 0 : length(var.iothub_dps_shared_access_policy)
-  iothub_dps_name     = try(element(azurerm_iothub_dps.this.*.name, lookup(var.iothub_dps_shared_access_policy[count.index], "iothub_dps_id")))
+  count               = length(var.iothub_dps) == "0" ? "0" : length(var.iothub_dps_shared_access_policy)
+  iothub_dps_name     = element(azurerm_iothub_dps.this.*.name, lookup(var.iothub_dps_shared_access_policy[count.index], "iothub_dps_id"))
   name                = lookup(var.iothub_dps_shared_access_policy[count.index], "name")
   resource_group_name = data.azurerm_resource_group.this.name
   enrollment_read     = lookup(var.iothub_dps_shared_access_policy[count.index], "enrollment_read")

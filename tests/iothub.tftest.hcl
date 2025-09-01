@@ -5,7 +5,6 @@ run "setup_tests" {
 }
 
 run "create_iothub" {
-  command = plan
 
   variables {
     resource_group_name     = "rg-iothub-1"
@@ -15,7 +14,7 @@ run "create_iothub" {
       purpose = "testing"
     }
     iothub = [{
-      id           = 0
+      id           = "0"
       name         = "Example-IoTHub"
       sku_name     = "S1"
       sku_capacity = "1"
@@ -54,9 +53,9 @@ run "create_iothub" {
       ]
     }]
     iothub_certificate = [{
-      id                  = 0
+      id                  = "0"
       name                = "example"
-      iothub_id           = 0
+      iothub_id           = "0"
       is_verified         = true
       certificate_content = "example.cer"
     }]
